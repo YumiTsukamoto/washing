@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#DCEFF0">
+<title>おせんたく ごっこ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#BFE6F5; --sky2:#EAF8FD; --grass:#A9DC96; --grass2:#8FCB7C;
+  --wall:#DCEFF0; --wall2:#CDE7E9; --floor:#E9D5B8; --floor2:#DBC29F;
+  --trim:#7FCBD0; --sun:#FFC93C; --sun2:#FFE08A;
+  --pink:#FF9FB6; --ink:#3F5560; --ink-soft:#6C838E;
+  --bubble:#FFFFFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","ヒラギノ丸ゴ ProN W4","M PLUS Rounded 1c",sans-serif;
+  font-weight:700; color:var(--ink); background:var(--wall);
+  -webkit-user-select:none;user-select:none; touch-action:manipulation;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:4px solid #FF7C9C;outline-offset:3px}
+
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+
+/* ---------- タイトル ---------- */
+.title-screen{
+  position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5vmin;padding:6vmin 4vmin;
+  background:radial-gradient(120% 90% at 50% 0%,#F3FBFD 0%,var(--wall) 55%,var(--wall2) 100%);
+}
+.signboard{
+  position:relative;background:#fff;border:.9vmin solid var(--trim);
+  border-radius:6vmin;padding:3.5vmin 7vmin;box-shadow:0 1.4vmin 0 rgba(127,203,208,.35);
+  transform:rotate(-1.5deg);
+}
+.signboard h1{
+  font-size:clamp(30px,8.4vmin,64px);font-weight:900;letter-spacing:.06em;line-height:1.15;
+  text-align:center;color:#2E7F86;
+}
+.signboard .sub{
+  display:block;margin-top:1vmin;font-size:clamp(12px,3vmin,20px);
+  font-weight:700;color:var(--ink-soft);letter-spacing:.14em;text-align:center;
+}
+.foam{position:absolute;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0%,#EAF8FD 55%,#CFEDF5 100%);
+  box-shadow:inset -.5vmin -.5vmin 1vmin rgba(120,180,200,.25)}
+.foam.f1{width:9vmin;height:9vmin;left:-4vmin;top:-4.5vmin}
+.foam.f2{width:5vmin;height:5vmin;left:-7.5vmin;top:3vmin}
+.foam.f3{width:6.5vmin;height:6.5vmin;right:-4vmin;bottom:-3.5vmin}
+
+.levels{display:flex;gap:4.5vmin;align-items:flex-end;flex-wrap:wrap;justify-content:center}
+.lv{
+  position:relative;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.6vmin;
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.98) 0%,#E6F7FD 38%,#BEE8F3 72%,#FFD9E6 100%);
+  box-shadow:0 1.2vmin 0 rgba(110,170,190,.3),inset -1vmin -1.4vmin 2.4vmin rgba(150,200,220,.35),inset 1vmin 1vmin 2vmin #fff;
+  transition:transform .16s ease,box-shadow .16s ease;
+}
+.lv:active{transform:translateY(.8vmin) scale(.97);box-shadow:0 .4vmin 0 rgba(110,170,190,.3),inset -1vmin -1.4vmin 2.4vmin rgba(150,200,220,.35)}
+.lv .name{font-size:clamp(15px,4vmin,26px);font-weight:900;color:#2E7F86}
+.lv .dots{display:flex;gap:.7vmin;flex-wrap:wrap;justify-content:center;max-width:70%}
+.lv .dots i{width:1.5vmin;height:1.5vmin;min-width:6px;min-height:6px;border-radius:50%;background:var(--pink)}
+.lv1{width:26vmin;height:26vmin;min-width:110px;min-height:110px}
+.lv2{width:31vmin;height:31vmin;min-width:126px;min-height:126px}
+.lv3{width:36vmin;height:36vmin;min-width:142px;min-height:142px}
+
+/* ---------- HUD ---------- */
+.hud{
+  position:relative;z-index:12;display:flex;align-items:center;gap:2vmin;
+  padding:1.6vmin 3vmin;background:#fff;box-shadow:0 .5vmin 1.6vmin rgba(80,130,150,.16);
+}
+.hud .say{
+  flex:1;text-align:center;font-size:clamp(16px,4.2vmin,30px);font-weight:900;color:#2E7F86;
+  line-height:1.25;
+}
+.home{
+  width:7.5vmin;height:7.5vmin;min-width:34px;min-height:34px;border-radius:50%;
+  background:var(--wall);display:grid;place-items:center;font-size:clamp(14px,3.4vmin,22px);color:var(--ink-soft);
+}
+.step-pips{display:flex;gap:1vmin}
+.step-pips i{width:1.6vmin;height:1.6vmin;min-width:7px;min-height:7px;border-radius:50%;background:#D6E6EA}
+.step-pips i.on{background:var(--trim)}
+
+/* ---------- ステージ ---------- */
+.stage{position:relative;flex:1;overflow:hidden}
+.scene{position:absolute;inset:0;z-index:1}
+.scene[hidden]{display:none}
+
+/* へや */
+.room{background:linear-gradient(180deg,#EAF7F8 0%,var(--wall) 45%,var(--wall2) 100%)}
+.room .floor{position:absolute;left:0;right:0;bottom:0;height:34%;
+  background:repeating-linear-gradient(90deg,var(--floor) 0 8%,var(--floor2) 8% 8.7%);
+  border-top:.8vmin solid #C9AC84}
+.room .rail{position:absolute;left:0;right:0;top:66%;height:1.2vmin;background:#C9AC84;transform:translateY(-100%)}
+
+/* そと */
+.yard{background:linear-gradient(180deg,var(--sky2) 0%,var(--sky) 58%)}
+.yard .ground{position:absolute;left:0;right:0;bottom:0;height:26%;
+  background:linear-gradient(180deg,var(--grass) 0%,var(--grass2) 100%);
+  border-top-left-radius:40% 22%;border-top-right-radius:40% 22%}
+.cloud{position:absolute;background:#fff;border-radius:50%;opacity:.9;
+  box-shadow:3vmin 1vmin 0 -.4vmin #fff,-3.4vmin .9vmin 0 -.8vmin #fff}
+.cloud.c1{width:9vmin;height:6vmin;left:14%;top:9%;animation:drift 34s linear infinite}
+.cloud.c2{width:7vmin;height:4.6vmin;left:58%;top:20%;animation:drift 46s linear infinite}
+@keyframes drift{0%{transform:translateX(-14vmin)}100%{transform:translateX(90vmin)}}
+
+/* 洗濯機 */
+.machine{position:absolute;left:50%;top:41%;transform:translate(-50%,-50%);
+  width:clamp(180px,46vmin,330px);z-index:2}
+.machine svg{width:100%;height:auto;display:block;filter:drop-shadow(0 1.4vmin 1.4vmin rgba(70,120,140,.22))}
+.machine.tappable{cursor:pointer}
+.machine.shake{animation:shake .42s ease}
+@keyframes shake{
+  0%,100%{transform:translate(-50%,-50%) rotate(0)}
+  25%{transform:translate(-50%,-50%) rotate(-1.6deg)}
+  60%{transform:translate(-50%,-50%) rotate(1.6deg)}
+}
+#drumSpin{transition:transform .5s cubic-bezier(.22,.8,.3,1);transform-origin:100px 142px}
+#doorGlass{transition:opacity .35s ease}
+.switch{
+  position:absolute;left:71%;top:11.5%;width:16%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff 0%,#E4E9EB 60%,#C6D2D6 100%);
+  box-shadow:0 .6vmin 0 #A9BBC1;
+}
+.switch.live{
+  background:radial-gradient(circle at 34% 30%,#FFF3C4 0%,#FFD24C 55%,#F0A81E 100%);
+  box-shadow:0 .6vmin 0 #D08F14,0 0 0 0 rgba(255,201,60,.7);
+  animation:pulse 1.1s ease-out infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 .6vmin 0 #D08F14,0 0 0 0 rgba(255,201,60,.75)}
+  100%{box-shadow:0 .6vmin 0 #D08F14,0 0 0 3.4vmin rgba(255,201,60,0)}
+}
+
+/* 泡 */
+.bubbles{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.bub{position:absolute;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.98),rgba(210,240,250,.55));
+  border:.25vmin solid rgba(255,255,255,.9);animation:rise 1.5s ease-out forwards}
+@keyframes rise{
+  0%{transform:translateY(0) scale(.4);opacity:0}
+  25%{opacity:1}
+  100%{transform:translateY(-26vmin) scale(1.1);opacity:0}
+}
+
+/* ものほし */
+.line-svg{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none}
+
+/* おひさま */
+.sun{position:absolute;left:80%;top:16%;transform:translate(-50%,-50%);
+  width:clamp(90px,24vmin,180px);z-index:2}
+.sun svg{width:100%;height:auto;display:block}
+#sunRays{transform-origin:100px 100px;animation:slowspin 26s linear infinite}
+@keyframes slowspin{to{transform:rotate(360deg)}}
+.sun.live{animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-52%) scale(1.05)}}
+.sun.hit #sunCore{animation:flash .4s ease}
+@keyframes flash{50%{filter:brightness(1.5)}}
+
+/* かご */
+.basket{position:absolute;left:50%;top:84%;transform:translate(-50%,-50%);
+  width:clamp(150px,36vmin,270px);z-index:2}
+.basket svg{width:100%;height:auto;display:block}
+
+/* ふく */
+.cloth-layer{position:absolute;inset:0;z-index:4;pointer-events:none}
+.cloth{
+  position:absolute;width:clamp(56px,15vmin,116px);aspect-ratio:1;
+  pointer-events:auto;touch-action:none;
+  transform:translate(-50%,-50%) scale(var(--s,1));
+  transition:left .6s cubic-bezier(.3,.9,.3,1),top .6s cubic-bezier(.3,.9,.3,1),
+             transform .6s cubic-bezier(.3,.9,.3,1),opacity .45s ease;
+  display:block;padding:0;
+}
+.cloth .inner{display:block;width:100%;height:100%;transform:rotate(var(--r,0deg));transition:filter .5s ease}
+.cloth svg{width:100%;height:100%;display:block;filter:drop-shadow(0 .5vmin .6vmin rgba(70,110,130,.2))}
+.cloth .drops{position:absolute;inset:0;pointer-events:none;transition:opacity .5s ease}
+.cloth.pickable{cursor:pointer}
+.cloth[disabled]{pointer-events:none}
+.cloth.dragging{z-index:9;transition:none !important}
+.cloth.dragging svg{filter:drop-shadow(0 2vmin 1.4vmin rgba(50,90,110,.32))}
+.cloth.dragging .inner{animation:none !important;transform:rotate(0deg) !important}
+
+/* 干す目印 */
+.targets{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tgt{
+  position:absolute;width:clamp(32px,9vmin,66px);aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  border:.55vmin dashed #fff;background:rgba(255,255,255,.32);
+  animation:tgtPulse 1.5s ease-in-out infinite;
+}
+@keyframes tgtPulse{
+  0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.9)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
+}
+.tgt.hot{
+  background:rgba(255,216,107,.75);border-color:#FFC93C;border-style:solid;
+  animation:none;transform:translate(-50%,-50%) scale(1.22);
+}
+.cloth.pickable .inner{animation:wiggle 1.5s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(var(--r,0deg))}50%{transform:rotate(calc(var(--r,0deg) + 5deg))}}
+.cloth.hung .inner{transform-origin:50% 6%;animation:sway 2.6s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(calc(var(--r,0deg) - 3deg))}50%{transform:rotate(calc(var(--r,0deg) + 3deg))}}
+.cloth.hung.pickable .inner{animation:sway 1.3s ease-in-out infinite}
+.peg{position:absolute;left:50%;top:-4%;width:16%;height:14%;transform:translateX(-50%);
+  background:#F2A65A;border-radius:1vmin;box-shadow:inset 0 0 0 .3vmin #D98A3C;opacity:0}
+.cloth.hung .peg{opacity:1}
+
+/* きらきら */
+.sparkle{position:absolute;pointer-events:none;z-index:7;font-size:4vmin;
+  animation:twinkle .9s ease-out forwards}
+@keyframes twinkle{
+  0%{transform:scale(.3) rotate(0);opacity:0}
+  30%{opacity:1}
+  100%{transform:scale(1.5) rotate(140deg) translateY(-4vmin);opacity:0}
+}
+
+/* ---------- クリア ---------- */
+.clear-screen{
+  position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4vmin;padding:6vmin 4vmin;
+  background:radial-gradient(120% 90% at 50% 20%,#FFF8E4 0%,#FFEFD2 45%,#FFE0BF 100%);
+}
+.clear-screen h2{font-size:clamp(28px,9vmin,68px);font-weight:900;color:#E07C2A;letter-spacing:.05em;text-align:center}
+.clear-line{display:flex;gap:2vmin;flex-wrap:wrap;justify-content:center;max-width:88vw}
+.clear-line svg{width:clamp(44px,12vmin,90px);height:auto;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.again{display:flex;gap:3vmin;flex-wrap:wrap;justify-content:center}
+.btn{
+  padding:2.2vmin 5.5vmin;border-radius:99px;font-size:clamp(15px,4vmin,26px);font-weight:900;
+  background:#fff;color:#2E7F86;box-shadow:0 1vmin 0 rgba(127,203,208,.55);
+  transition:transform .14s ease,box-shadow .14s ease;
+}
+.btn:active{transform:translateY(.8vmin);box-shadow:0 .2vmin 0 rgba(127,203,208,.55)}
+.btn.primary{background:var(--pink);color:#fff;box-shadow:0 1vmin 0 #E37891}
+.btn.primary:active{box-shadow:0 .2vmin 0 #E37891}
+@keyframes pop{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+
+[hidden]{display:none !important}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.12s !important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- タイトル -->
+  <section class="title-screen" id="titleScreen">
+    <div class="signboard">
+      <span class="foam f1"></span><span class="foam f2"></span><span class="foam f3"></span>
+      <h1>おせんたく<br>ごっこ</h1>
+      <span class="sub">あらって ほして とりこもう</span>
+    </div>
+    <div class="levels" id="levels"></div>
+  </section>
+
+  <!-- ゲーム -->
+  <header class="hud" id="hud" hidden>
+    <button class="home" id="homeBtn" aria-label="さいしょのがめんへ">✕</button>
+    <p class="say" id="say">おふくを いれてね</p>
+    <div class="step-pips" id="pips" aria-hidden="true"></div>
+  </header>
+
+  <main class="stage" id="stage" hidden>
+    <!-- へや -->
+    <div class="scene room" id="sceneRoom">
+      <div class="rail"></div>
+      <div class="floor"></div>
+      <div class="machine" id="machine">
+        <svg viewBox="0 0 200 250" aria-hidden="true">
+          <rect x="14" y="10" width="172" height="222" rx="26" fill="#FBFEFE"/>
+          <rect x="14" y="10" width="172" height="222" rx="26" fill="none" stroke="#B9DDE0" stroke-width="5"/>
+          <rect x="14" y="10" width="172" height="52" rx="26" fill="#8FD4D8"/>
+          <rect x="14" y="46" width="172" height="16" fill="#8FD4D8"/>
+          <rect x="30" y="26" width="60" height="20" rx="10" fill="#EAF8FA"/>
+          <circle cx="42" cy="36" r="5" fill="#7FCBD0"/><circle cx="58" cy="36" r="5" fill="#CFEAEC"/><circle cx="74" cy="36" r="5" fill="#CFEAEC"/>
+          <circle cx="100" cy="142" r="72" fill="#EAF8FA"/>
+          <clipPath id="drumClip"><circle cx="100" cy="142" r="62"/></clipPath>
+          <g clip-path="url(#drumClip)">
+            <rect x="34" y="80" width="132" height="124" fill="#F6FCFD"/>
+            <rect id="sudsFill" x="34" y="204" width="132" height="0" fill="#CDEEF7"/>
+            <g id="drumSpin">
+              <path d="M64 118 q18 -14 34 -2 q16 12 34 -2 l6 24 q-20 14 -38 2 q-18 -12 -34 0 z" fill="#FFC3D2" opacity=".95"/>
+              <path d="M58 158 q20 -12 36 0 q18 12 40 -2 l4 22 q-22 14 -42 2 q-20 -12 -36 0 z" fill="#B7DFF2" opacity=".95"/>
+              <circle cx="78" cy="192" r="13" fill="#FFE08A" opacity=".9"/>
+              <circle cx="126" cy="100" r="11" fill="#C7E9B4" opacity=".9"/>
+            </g>
+          </g>
+          <circle id="doorGlass" cx="100" cy="142" r="62" fill="url(#glassGrad)" opacity=".55"/>
+          <defs>
+            <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/>
+              <stop offset="45%" stop-color="#FFFFFF" stop-opacity=".05"/>
+              <stop offset="100%" stop-color="#9CCBD6" stop-opacity=".4"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="142" r="62" fill="none" stroke="#8FD4D8" stroke-width="10"/>
+          <circle cx="100" cy="142" r="72" fill="none" stroke="#D9EEF0" stroke-width="5"/>
+          <rect x="26" y="232" width="26" height="16" rx="6" fill="#B9DDE0"/>
+          <rect x="148" y="232" width="26" height="16" rx="6" fill="#B9DDE0"/>
+        </svg>
+        <button class="switch" id="switchBtn" aria-label="スイッチ"></button>
+      </div>
+    </div>
+
+    <!-- そと -->
+    <div class="scene yard" id="sceneYard" hidden>
+      <span class="cloud c1"></span><span class="cloud c2"></span>
+      <div class="ground"></div>
+      <svg class="line-svg" id="lineSvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path id="ropePath" d="" fill="none" stroke="#C9AC84" stroke-width=".9" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="targets" id="targets"></div>
+      <button class="sun" id="sun" aria-label="おひさま">
+        <svg viewBox="0 0 200 200">
+          <g id="sunRays">
+            <g id="rayGroup" fill="#FFD86B"></g>
+          </g>
+          <circle id="sunCore" cx="100" cy="100" r="52" fill="#FFC93C"/>
+          <circle cx="100" cy="100" r="52" fill="none" stroke="#FFE08A" stroke-width="7"/>
+          <circle cx="82" cy="94" r="6" fill="#B9752A"/><circle cx="118" cy="94" r="6" fill="#B9752A"/>
+          <path d="M86 116 q14 12 28 0" fill="none" stroke="#B9752A" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="72" cy="110" r="8" fill="#FF9FB6" opacity=".65"/>
+          <circle cx="128" cy="110" r="8" fill="#FF9FB6" opacity=".65"/>
+        </svg>
+      </button>
+      <div class="basket" id="basket" aria-hidden="true">
+        <svg viewBox="0 0 240 120">
+          <path d="M18 26 h204 l-20 82 q-2 10 -12 10 h-140 q-10 0 -12 -10 z" fill="#E0B87E"/>
+          <path d="M18 26 h204 l-20 82 q-2 10 -12 10 h-140 q-10 0 -12 -10 z" fill="none" stroke="#C69A5E" stroke-width="5"/>
+          <g stroke="#C69A5E" stroke-width="4" opacity=".8">
+            <path d="M46 40 L58 108"/><path d="M84 40 L90 110"/><path d="M120 40 L120 110"/>
+            <path d="M156 40 L150 110"/><path d="M194 40 L182 108"/>
+            <path d="M24 56 H216"/><path d="M28 82 H212"/>
+          </g>
+          <rect x="10" y="16" width="220" height="20" rx="10" fill="#F0CD9A" stroke="#C69A5E" stroke-width="5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="cloth-layer" id="clothLayer"></div>
+    <div class="bubbles" id="bubbles"></div>
+  </main>
+
+  <!-- クリア -->
+  <section class="clear-screen" id="clearScreen" hidden>
+    <h2>ぜんぶ できたね！</h2>
+    <div class="clear-line" id="clearLine"></div>
+    <div class="again">
+      <button class="btn primary" id="againBtn">もういちど</button>
+      <button class="btn" id="backBtn">レベルをかえる</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ===== レベル ===== */
+const LEVELS = {
+  easy:   {key:'easy',   name:'かんたん',   clothes:3, washTaps:5,  sunTaps:3, cls:'lv1'},
+  normal: {key:'normal', name:'ふつう',     clothes:5, washTaps:10, sunTaps:5, cls:'lv2'},
+  hard:   {key:'hard',   name:'むずかしい', clothes:7, washTaps:15, sunTaps:8, cls:'lv3'}
+};
+
+/* ===== ふくの形 ===== */
+const PATHS = {
+  shirt:'M30 20 L44 13 Q50 21 56 13 L70 20 L84 33 Q86 36 83 39 L75 46 Q72 48 70 45 L66 40 L66 84 Q66 88 62 88 L38 88 Q34 88 34 84 L34 40 L30 45 Q28 48 25 46 L17 39 Q14 36 16 33 Z',
+  pants:'M31 16 L69 16 Q72 16 72 20 L75 84 Q75 88 71 88 L60 88 Q57 88 56 85 L50 55 L44 85 Q43 88 40 88 L29 88 Q25 88 25 84 L28 20 Q28 16 31 16 Z',
+  sock:'M38 12 L60 12 Q64 12 64 16 L64 52 Q64 56 67 58 L77 65 Q85 71 81 80 Q77 88 68 87 L49 84 Q36 82 35 70 L35 16 Q35 12 38 12 Z',
+  towel:'M22 24 h56 q6 0 6 6 v40 q0 6 -6 6 h-56 q-6 0 -6 -6 v-40 q0 -6 6 -6 z',
+  dress:'M34 18 L44 13 Q50 21 56 13 L66 18 L78 32 Q81 35 78 38 L71 44 Q68 46 66 43 L64 39 L75 82 Q76 86 72 87 Q50 92 28 87 Q24 86 25 82 L36 39 L34 43 Q32 46 29 44 L22 38 Q19 35 22 32 Z',
+  undies:'M24 32 h52 q5 0 4 5 l-4 21 q-1 5 -6 6 Q58 66 50 80 Q42 66 30 64 q-5 -1 -6 -6 l-4 -21 q-1 -5 4 -5 z',
+  hat:'M20 70 Q17 61 26 59 Q26 30 50 27 Q74 30 74 59 Q83 61 80 70 Q65 77 50 77 Q35 77 20 70 Z'
+};
+const KIT = [
+  {type:'shirt',  color:'#FF9FB6'},
+  {type:'pants',  color:'#7EC8E3'},
+  {type:'sock',   color:'#FFD86B'},
+  {type:'dress',  color:'#B6A6E8'},
+  {type:'towel',  color:'#9FDCA0'},
+  {type:'undies', color:'#FFB27A'},
+  {type:'hat',    color:'#8FD4D8'}
+];
+
+function shade(hex,amt){
+  const n = parseInt(hex.slice(1),16);
+  const c = [n>>16, (n>>8)&255, n&255].map(v=>Math.max(0,Math.min(255,v+amt)));
+  return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function clothSVG(type,color){
+  const d = shade(color,-30), l = shade(color,26);
+  const base = `<path d="${PATHS[type]}" fill="${color}" stroke="${d}" stroke-width="3" stroke-linejoin="round"/>`;
+  const detail = {
+    shirt:`<path d="M44 13 Q50 22 56 13" fill="none" stroke="${d}" stroke-width="4" stroke-linecap="round"/>
+           <path d="M34 62 H66" stroke="${l}" stroke-width="4" stroke-linecap="round"/>`,
+    pants:`<path d="M50 22 V50" stroke="${d}" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+           <path d="M27 26 H73" stroke="${l}" stroke-width="5" stroke-linecap="round"/>`,
+    sock:`<path d="M35 26 H64" stroke="${l}" stroke-width="6" stroke-linecap="round"/>
+          <path d="M52 76 Q64 78 74 76" stroke="${l}" stroke-width="5" stroke-linecap="round" fill="none"/>`,
+    towel:`<path d="M16 42 H84" stroke="${l}" stroke-width="6"/><path d="M16 56 H84" stroke="#fff" stroke-width="6" opacity=".8"/>`,
+    dress:`<path d="M44 13 Q50 22 56 13" fill="none" stroke="${d}" stroke-width="4" stroke-linecap="round"/>
+           <path d="M33 52 Q50 58 67 52" fill="none" stroke="${l}" stroke-width="6" stroke-linecap="round"/>`,
+    undies:`<path d="M20 40 Q50 48 80 40" fill="none" stroke="${l}" stroke-width="6" stroke-linecap="round"/>`,
+    hat:`<path d="M26 58 Q50 66 74 58" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/>`
+  };
+  return `<svg viewBox="0 0 100 100">${base}${detail[type]||''}</svg>`;
+}
+const DROPS = `<svg class="drops" viewBox="0 0 100 100">
+  <g fill="#6FC4E8" opacity=".85">
+    <path d="M28 82 q4 6 0 9 q-5 -3 0 -9z"/><path d="M50 88 q4 6 0 9 q-5 -3 0 -9z"/><path d="M70 80 q4 6 0 9 q-5 -3 0 -9z"/>
+  </g></svg>`;
+
+/* ===== おと ===== */
+const Snd = (()=>{
+  let ctx=null;
+  function ac(){
+    if(!ctx){ const C = window.AudioContext||window.webkitAudioContext; if(!C) return null; ctx = new C(); }
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+  function tone(f1,f2,dur,type,vol,delay){
+    const c = ac(); if(!c) return;
+    const t = c.currentTime + (delay||0);
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type||'sine'; o.frequency.setValueAtTime(f1,t);
+    if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol||0.16,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.05);
+  }
+  function noise(dur,freq,vol){
+    const c = ac(); if(!c) return;
+    const len = Math.floor(c.sampleRate*dur);
+    const buf = c.createBuffer(1,len,c.sampleRate), data = buf.getChannelData(0);
+    for(let i=0;i<len;i++) data[i] = (Math.random()*2-1)*(1-i/len);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=freq||900; bp.Q.value=1.4;
+    const g = c.createGain(); g.gain.value = vol||0.12;
+    src.connect(bp); bp.connect(g); g.connect(c.destination); src.start();
+  }
+  return {
+    unlock:ac,
+    pop(){ tone(760,300,0.14,'sine',0.18); },
+    plop(){ tone(420,180,0.18,'triangle',0.2); noise(0.12,700,0.06); },
+    whir(){ noise(0.32,760,0.09); tone(180,240,0.3,'sawtooth',0.05); },
+    click(){ tone(980,620,0.1,'square',0.1); },
+    finish(){ for(let i=0;i<3;i++){ tone(1046,1046,0.16,'square',0.14,i*0.26); } },
+    sparkle(){ [880,1174,1568].forEach((f,i)=>tone(f,f,0.14,'triangle',0.12,i*0.07)); },
+    fanfare(){ [523,659,784,1046].forEach((f,i)=>tone(f,f,0.5,'triangle',0.16,i*0.15)); }
+  };
+})();
+
+/* ===== 状態 ===== */
+const el = id => document.getElementById(id);
+const titleScreen=el('titleScreen'), clearScreen=el('clearScreen'), hud=el('hud'), stage=el('stage');
+const sceneRoom=el('sceneRoom'), sceneYard=el('sceneYard'), clothLayer=el('clothLayer');
+const machine=el('machine'), switchBtn=el('switchBtn'), sun=el('sun'), sudsFill=el('sudsFill'), drumSpin=el('drumSpin');
+const say=el('say'), pips=el('pips'), bubbles=el('bubbles'), doorGlass=el('doorGlass'), targets=el('targets');
+
+let G = null;
+const STEPS = ['load','switch','wash','hang','dry','collect'];
+const LINES = {
+  load:'おふくを せんたくきに いれてね',
+  switch:'スイッチを おしてね',
+  wash:'せんたくきを トントンたたいて まわそう',
+  hang:'おふくを ひっぱって ほしてね',
+  dry:'おひさまを トントンたたいて かわかそう',
+  collect:'かわいたよ！ かごに とりこもう'
+};
+
+/* ===== タイトル ===== */
+(function buildTitle(){
+  const box = el('levels');
+  Object.values(LEVELS).forEach(lv=>{
+    const b = document.createElement('button');
+    b.className = 'lv '+lv.cls;
+    b.innerHTML = `<span class="name">${lv.name}</span><span class="dots">${'<i></i>'.repeat(lv.clothes)}</span>`;
+    b.setAttribute('aria-label', lv.name+' おふく'+lv.clothes+'まい');
+    b.addEventListener('click',()=>{ Snd.unlock(); Snd.pop(); start(lv.key); });
+    box.appendChild(b);
+  });
+})();
+
+/* おひさまの光線 */
+(function buildRays(){
+  const g = el('rayGroup');
+  let s='';
+  for(let i=0;i<12;i++){
+    const a = i*30*Math.PI/180;
+    const x = 100+Math.cos(a)*76, y = 100+Math.sin(a)*76;
+    s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11"/>`;
+  }
+  g.innerHTML = s;
+})();
+
+/* ===== ゲーム開始 ===== */
+function start(levelKey){
+  const lv = LEVELS[levelKey];
+  G = {
+    lv, step:'load', inMachine:0, washTaps:0, sunTaps:0,
+    hung:0, collected:0, dryness:0, clothes:[], busy:false
+  };
+  titleScreen.hidden = true; clearScreen.hidden = true;
+  hud.hidden = false; stage.hidden = false;
+  sceneRoom.hidden = false; sceneYard.hidden = true;
+  clothLayer.innerHTML = ''; bubbles.innerHTML = ''; targets.innerHTML = '';
+  sudsFill.setAttribute('y','204'); sudsFill.setAttribute('height','0');
+  drumSpin.style.transform = 'rotate(0deg)';
+  doorGlass.style.opacity = '.55';
+  switchBtn.classList.remove('live');
+  machine.classList.remove('tappable');
+  sun.classList.remove('live');
+
+  buildPips();
+  for(let i=0;i<lv.clothes;i++){
+    const kit = KIT[i % KIT.length];
+    const c = makeCloth(i, kit.type, kit.color);
+    G.clothes.push(c);
+  }
+  layoutFloor();
+  setStep('load');
+}
+
+function makeCloth(i,type,color){
+  const b = document.createElement('button');
+  b.className = 'cloth';
+  b.style.setProperty('--r', ((i*37)%2 ? 1 : -1) * (6 + (i*13)%12) + 'deg');
+  b.style.setProperty('--s','1');
+  b.innerHTML = `<span class="peg"></span><span class="inner">${clothSVG(type,color)}${DROPS}</span>`;
+  b.setAttribute('aria-label','おふく');
+  const obj = {i,type,color,el:b,place:'floor',bpos:[50,80]};
+  b.addEventListener('click',()=>onCloth(obj));
+  b.addEventListener('pointerdown',ev=>onGrab(obj,ev));
+  clothLayer.appendChild(b);
+  return obj;
+}
+
+function buildPips(){
+  pips.innerHTML = STEPS.map(()=> '<i></i>').join('');
+  markPips();
+}
+function markPips(){
+  const idx = STEPS.indexOf(G.step);
+  [...pips.children].forEach((p,i)=> p.classList.toggle('on', i<=idx));
+}
+
+function setStep(s){
+  G.step = s;
+  say.textContent = LINES[s];
+  markPips();
+  machine.classList.toggle('tappable', s==='wash');
+  switchBtn.classList.toggle('live', s==='switch');
+  sun.classList.toggle('live', s==='dry');
+  drawTargets();
+  refreshPickable();
+}
+
+function refreshPickable(){
+  G.clothes.forEach(c=>{
+    let ok = false;
+    if(G.step==='load') ok = c.place==='floor';
+    if(G.step==='hang') ok = c.place==='basket';
+    if(G.step==='collect') ok = c.place==='line';
+    c.el.classList.toggle('pickable', ok && !G.busy);
+    c.el.disabled = !(ok && !G.busy);
+  });
+}
+
+/* ===== 位置 ===== */
+function place(c,x,y,scale,opacity,instant){
+  const e = c.el;
+  if(instant){ e.style.transition='none'; }
+  e.style.left = (typeof x === 'number' ? x+'%' : x);
+  e.style.top  = (typeof y === 'number' ? y+'%' : y);
+  e.style.setProperty('--s', scale);
+  e.style.opacity = opacity;
+  if(instant){ void e.offsetWidth; e.style.transition=''; }
+}
+
+function layoutFloor(){
+  const n = G.clothes.length;
+  const perRow = Math.ceil(n/2);
+  G.clothes.forEach((c,i)=>{
+    const row = Math.floor(i/perRow), col = i%perRow;
+    const cnt = row===0 ? perRow : n-perRow;
+    const x = cnt<=1 ? 50 : 16 + 68*col/(cnt-1);
+    const y = row===0 ? 73 : 88;
+    place(c, x, y, 1, 1, true);
+  });
+}
+
+function basketPos(i){
+  const n = G.clothes.length;
+  const spread = Math.min(26, 6*n);
+  const x = 50 + (i-(n-1)/2) * (spread/Math.max(1,n-1)) * 1.6;
+  const y = 80 - (i%3)*1.6;
+  return [x,y];
+}
+
+const ropeY = x => 34 + 5.4*(1 - Math.pow((x-50)/44, 2));
+
+function hangPos(i){
+  const n = G.clothes.length;
+  const x = n<=1 ? 50 : 14 + 72*i/(n-1);
+  return [x, `calc(${ropeY(x).toFixed(2)}% + clamp(26px, 7vmin, 54px))`];
+}
+
+function drawRope(){
+  const pts = [];
+  for(let k=0;k<=20;k++){
+    const x = 6 + 88*k/20;
+    pts.push([x, ropeY(x)]);
+  }
+  const d = 'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
+  el('ropePath').setAttribute('d', d + ' M6 34 L6 92 M94 34 L94 92');
+}
+
+/* ===== エフェクト ===== */
+function popBubbles(cx,cy,count){
+  for(let i=0;i<(count||5);i++){
+    const b = document.createElement('span');
+    b.className = 'bub';
+    const size = 2 + Math.random()*4;
+    b.style.width = size+'vmin'; b.style.height = size+'vmin';
+    b.style.left = (cx + (Math.random()*26-13))+'%';
+    b.style.top = (cy + (Math.random()*10-5))+'%';
+    b.style.animationDelay = (Math.random()*0.25)+'s';
+    bubbles.appendChild(b);
+    setTimeout(()=>b.remove(), 2000);
+  }
+}
+function sparkleAt(x,y){
+  const s = document.createElement('span');
+  s.className = 'sparkle'; s.textContent = '✦';
+  s.style.left = x+'%'; s.style.top = y+'%';
+  bubbles.appendChild(s);
+  setTimeout(()=>s.remove(), 1000);
+}
+
+/* ===== ふくをタップ ===== */
+function onCloth(c){
+  if(G.busy) return;
+  if(G.step==='load' && c.place==='floor'){
+    c.place = 'machine';
+    Snd.plop();
+    place(c, 50, 41, 0.25, 0, false);
+    c.el.classList.remove('pickable');
+    G.inMachine++;
+    popBubbles(50, 41, 3);
+    refreshPickable();
+    if(G.inMachine === G.clothes.length){
+      setTimeout(()=>{ Snd.click(); setStep('switch'); }, 500);
+    }
+  }
+  else if(G.step==='collect' && c.place==='line'){
+    c.place = 'basket';
+    Snd.plop();
+    c.el.classList.remove('hung');
+    const [x,y] = basketPos(G.collected++);
+    place(c, x, y, 0.62, 1, false);
+    sparkleAt(x, y-8);
+    refreshPickable();
+    if(G.collected === G.clothes.length){
+      G.busy = true;
+      setTimeout(showClear, 800);
+    }
+  }
+}
+
+/* ===== ひっぱって ほす ===== */
+let drag = null;
+
+function openSlots(){
+  const used = new Set(G.clothes.filter(c=>c.place==='line').map(c=>c.slot));
+  const out = [];
+  for(let i=0;i<G.clothes.length;i++) if(!used.has(i)) out.push(i);
+  return out;
+}
+function nearestSlot(x, open){
+  let best = open[0], bd = Infinity;
+  open.forEach(i=>{
+    const d = Math.abs(hangPos(i)[0] - x);
+    if(d < bd){ bd = d; best = i; }
+  });
+  return best;
+}
+function drawTargets(){
+  if(!G || G.step!=='hang'){ targets.innerHTML=''; return; }
+  targets.innerHTML = openSlots().map(i=>{
+    const x = hangPos(i)[0];
+    return `<span class="tgt" data-slot="${i}" style="left:${x.toFixed(1)}%;top:${(ropeY(x)+2.5).toFixed(1)}%"></span>`;
+  }).join('');
+}
+function hotTarget(x){
+  const open = openSlots();
+  if(!open.length) return;
+  const hit = nearestSlot(x, open);
+  [...targets.children].forEach(t=> t.classList.toggle('hot', +t.dataset.slot === hit));
+}
+
+function onGrab(c, ev){
+  if(!G || G.busy || G.step!=='hang' || c.place!=='basket') return;
+  if(ev.button != null && ev.button !== 0) return;
+  ev.preventDefault();
+  const r = stage.getBoundingClientRect();
+  drag = {c, r, id:ev.pointerId, moved:false, sx:ev.clientX, sy:ev.clientY, x:c.bpos[0], y:c.bpos[1]};
+  c.el.classList.add('dragging');
+  c.el.style.setProperty('--s','0.92');
+  Snd.pop();
+  window.addEventListener('pointermove', onDragMove);
+  window.addEventListener('pointerup', onDragEnd);
+  window.addEventListener('pointercancel', onDragEnd);
+  onDragMove(ev);
+}
+function onDragMove(ev){
+  if(!drag || ev.pointerId !== drag.id) return;
+  ev.preventDefault();
+  drag.x = (ev.clientX - drag.r.left) / drag.r.width * 100;
+  drag.y = (ev.clientY - drag.r.top) / drag.r.height * 100;
+  if(Math.abs(ev.clientX-drag.sx) > 8 || Math.abs(ev.clientY-drag.sy) > 8) drag.moved = true;
+  drag.c.el.style.left = drag.x + '%';
+  drag.c.el.style.top  = drag.y + '%';
+  if(drag.moved) hotTarget(drag.x);
+}
+function onDragEnd(){
+  if(!drag) return;
+  const {c, x, y, moved} = drag;
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', onDragEnd);
+  window.removeEventListener('pointercancel', onDragEnd);
+  c.el.classList.remove('dragging');
+  drag = null;
+  const open = openSlots();
+  if(!open.length) return;
+  if(!moved){
+    hangCloth(c, open[0]);
+  } else if(y < 66){
+    hangCloth(c, nearestSlot(x, open));
+  } else {
+    Snd.plop();
+    place(c, c.bpos[0], c.bpos[1], 0.62, 1, false);
+    drawTargets();
+  }
+}
+function hangCloth(c, slot){
+  c.place = 'line'; c.slot = slot; G.hung++;
+  Snd.pop();
+  const [x,y] = hangPos(slot);
+  c.el.classList.add('hung');
+  place(c, x, y, 1, 1, false);
+  sparkleAt(hangPos(slot)[0], ropeY(hangPos(slot)[0]) + 2);
+  drawTargets();
+  refreshPickable();
+  if(G.hung === G.clothes.length){
+    setTimeout(()=>{ Snd.click(); setStep('dry'); }, 550);
+  }
+}
+
+/* ===== スイッチ ===== */
+switchBtn.addEventListener('click', ()=>{
+  Snd.unlock();
+  if(G && G.step==='switch'){
+    Snd.click(); Snd.whir();
+    switchBtn.classList.remove('live');
+    setStep('wash');
+  }
+});
+
+/* ===== 洗濯機タップ ===== */
+machine.addEventListener('click', (e)=>{
+  Snd.unlock();
+  if(e.target === switchBtn) return;
+  if(!G || G.step!=='wash' || G.busy) return;
+  G.washTaps++;
+  Snd.whir();
+  machine.classList.remove('shake'); void machine.offsetWidth; machine.classList.add('shake');
+  drumSpin.style.transform = `rotate(${G.washTaps*210}deg)`;
+  const p = Math.min(1, G.washTaps/G.lv.washTaps);
+  const h = 124*p;
+  sudsFill.setAttribute('y', (204-h).toFixed(1));
+  sudsFill.setAttribute('height', h.toFixed(1));
+  popBubbles(50, 34, 4);
+  if(G.washTaps >= G.lv.washTaps) finishWash();
+});
+
+function finishWash(){
+  G.busy = true;
+  machine.classList.remove('tappable');
+  say.textContent = 'ピーピー！ あらえたよ';
+  setTimeout(()=>{ Snd.finish(); }, 300);
+  doorGlass.style.opacity = '0';
+  setTimeout(()=>{
+    sceneRoom.hidden = true; sceneYard.hidden = false;
+    drawRope();
+    G.clothes.forEach((c,i)=>{
+      c.place = 'basket';
+      const [x,y] = basketPos(i);
+      c.bpos = [x,y];
+      place(c, x, y-14, 0.62, 0, true);
+      setTimeout(()=>{ place(c, x, y, 0.62, 1, false); setWet(c, 0); }, 40 + i*70);
+    });
+    setTimeout(()=>{
+      G.busy = false;
+      Snd.pop();
+      setStep('hang');
+    }, 400 + G.clothes.length*70);
+  }, 1600);
+}
+
+function setWet(c, dryness){
+  const inner = c.el.querySelector('.inner');
+  const drops = c.el.querySelector('.drops');
+  inner.style.filter = `brightness(${(0.86 + 0.14*dryness).toFixed(3)}) saturate(${(1.18 - 0.18*dryness).toFixed(3)})`;
+  drops.style.opacity = (1 - dryness).toFixed(2);
+}
+
+/* ===== おひさま ===== */
+sun.addEventListener('click', ()=>{
+  Snd.unlock();
+  if(!G || G.step!=='dry' || G.busy) return;
+  G.sunTaps++;
+  Snd.sparkle();
+  sun.classList.remove('hit'); void sun.offsetWidth; sun.classList.add('hit');
+  G.dryness = Math.min(1, G.sunTaps/G.lv.sunTaps);
+  G.clothes.forEach(c=> setWet(c, G.dryness));
+  const rays = el('rayGroup');
+  rays.setAttribute('transform', `translate(${100*(1-(1+0.12*G.dryness))} ${100*(1-(1+0.12*G.dryness))}) scale(${1+0.12*G.dryness})`);
+  sparkleAt(74 + Math.random()*12, 12 + Math.random()*14);
+  if(G.sunTaps >= G.lv.sunTaps){
+    G.busy = true;
+    say.textContent = 'ふわふわに かわいたよ';
+    G.clothes.forEach(c=>{ const x = hangPos(c.slot)[0]; sparkleAt(x, ropeY(x)+4); });
+    setTimeout(()=>{ G.busy=false; Snd.click(); setStep('collect'); }, 1100);
+  }
+});
+
+/* ===== クリア ===== */
+function showClear(){
+  Snd.fanfare();
+  const box = el('clearLine');
+  box.innerHTML = G.clothes.map((c,i)=>
+    `<span style="animation-delay:${i*0.1}s;display:inline-block">${clothSVG(c.type,c.color)}</span>`
+  ).join('');
+  [...box.children].forEach((s,i)=>{
+    const svg = s.querySelector('svg');
+    if(svg) svg.style.animationDelay = (i*0.1)+'s';
+  });
+  clearScreen.hidden = false;
+  hud.hidden = true; stage.hidden = true;
+}
+
+el('againBtn').addEventListener('click', ()=>{ Snd.pop(); start(G.lv.key); });
+el('backBtn').addEventListener('click', ()=>{ Snd.pop(); goTitle(); });
+el('homeBtn').addEventListener('click', goTitle);
+
+function goTitle(){
+  clearScreen.hidden = true; hud.hidden = true; stage.hidden = true;
+  titleScreen.hidden = false;
+  clothLayer.innerHTML = ''; bubbles.innerHTML = ''; targets.innerHTML = '';
+  G = null;
+}
+
+window.addEventListener('resize', ()=>{ if(G && G.step!=='load') return; if(G) layoutFloor(); });
+document.addEventListener('touchstart', ()=>Snd.unlock(), {once:true, passive:true});
+</script>
+</body>
+</html>
