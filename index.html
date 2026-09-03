@@ -110,8 +110,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @keyframes drift{0%{transform:translateX(-14vmin)}100%{transform:translateX(90vmin)}}
 
 /* 洗濯機 */
-.machine{position:absolute;left:50%;top:41%;transform:translate(-50%,-50%);
-  width:clamp(180px,46vmin,330px);z-index:2}
+.machine{position:absolute;left:50%;top:39%;transform:translate(-50%,-50%);
+  width:clamp(230px,62vmin,430px);z-index:2}
 .machine svg{width:100%;height:auto;display:block;filter:drop-shadow(0 1.4vmin 1.4vmin rgba(70,120,140,.22))}
 .machine.tappable{cursor:pointer}
 .machine.shake{animation:shake .42s ease}
@@ -151,13 +151,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .line-svg{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none}
 
 /* おひさま */
-.sun{position:absolute;left:80%;top:16%;transform:translate(-50%,-50%);
-  width:clamp(90px,24vmin,180px);z-index:2}
+.sun{position:absolute;left:81%;top:13%;transform:translate(-50%,-50%);
+  width:clamp(90px,22vmin,170px);z-index:2}
 .sun svg{width:100%;height:auto;display:block}
 #sunRays{transform-origin:100px 100px;animation:slowspin 26s linear infinite}
 @keyframes slowspin{to{transform:rotate(360deg)}}
 .sun.live{animation:bob 1.6s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-52%) scale(1.05)}}
+@keyframes bob{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-53%) scale(1.05)}}
 .sun.hit #sunCore{animation:flash .4s ease}
 @keyframes flash{50%{filter:brightness(1.5)}}
 
@@ -169,7 +169,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 /* ふく */
 .cloth-layer{position:absolute;inset:0;z-index:4;pointer-events:none}
 .cloth{
-  position:absolute;width:clamp(56px,15vmin,116px);aspect-ratio:1;
+  position:absolute;width:clamp(78px,22vmin,170px);aspect-ratio:1;
   pointer-events:auto;touch-action:none;
   transform:translate(-50%,-50%) scale(var(--s,1));
   transition:left .6s cubic-bezier(.3,.9,.3,1),top .6s cubic-bezier(.3,.9,.3,1),
@@ -219,6 +219,31 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   100%{transform:scale(1.5) rotate(140deg) translateY(-4vmin);opacity:0}
 }
 
+/* ---------- かごを はこぶ ---------- */
+.carry-scene{
+  position:absolute;inset:0;z-index:8;overflow:hidden;
+  background:linear-gradient(100deg,var(--wall) 0%,#E4F3F6 34%,var(--sky2) 60%,var(--sky) 100%);
+}
+.carry-ground{
+  position:absolute;left:0;right:0;bottom:0;height:26%;
+  background:linear-gradient(100deg,var(--floor) 0%,var(--floor2) 36%,var(--grass) 60%,var(--grass2) 100%);
+  border-top:.8vmin solid rgba(90,120,110,.18);
+}
+.carry-scene .cloud{opacity:.85;animation:none}
+.carry-scene .cloud.c1{left:54%;top:12%}
+.carry-scene .cloud.c2{left:78%;top:27%}
+.carrier{position:absolute;bottom:14%;left:-30%;width:clamp(120px,34vmin,250px)}
+.carrier svg{width:100%;height:auto;display:block;filter:drop-shadow(0 1.2vmin 1vmin rgba(70,110,130,.2))}
+.carrier.go{animation:walkAcross 2.8s linear forwards, bobWalk .5s ease-in-out infinite}
+@keyframes walkAcross{from{left:-30%}to{left:114%}}
+@keyframes bobWalk{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.3vmin)}}
+#legF{transform-origin:120px 196px}
+#legB{transform-origin:100px 196px}
+.carrier.go #legF{animation:stepA .5s ease-in-out infinite}
+.carrier.go #legB{animation:stepB .5s ease-in-out infinite}
+@keyframes stepA{0%,100%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}}
+@keyframes stepB{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+
 /* ---------- クリア ---------- */
 .clear-screen{
   position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
@@ -262,7 +287,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <!-- ゲーム -->
   <header class="hud" id="hud" hidden>
     <button class="home" id="homeBtn" aria-label="さいしょのがめんへ">✕</button>
-    <p class="say" id="say">おふくを いれてね</p>
+    <p class="say" id="say">ふくを いれてね</p>
     <div class="step-pips" id="pips" aria-hidden="true"></div>
   </header>
 
@@ -345,6 +370,55 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
     <div class="cloth-layer" id="clothLayer"></div>
     <div class="bubbles" id="bubbles"></div>
+
+    <!-- かごを はこぶ -->
+    <div class="carry-scene" id="carryScene" hidden>
+      <span class="cloud c1"></span><span class="cloud c2"></span>
+      <div class="carry-ground"></div>
+      <div class="carrier" id="carrier">
+        <svg viewBox="0 0 220 280" aria-hidden="true">
+          <!-- あし -->
+          <g id="legB">
+            <rect x="92" y="192" width="17" height="50" rx="8.5" fill="#FFE0C8"/>
+            <rect x="85" y="234" width="31" height="18" rx="9" fill="#7FB3E0"/>
+          </g>
+          <g id="legF">
+            <rect x="112" y="192" width="17" height="50" rx="8.5" fill="#FFD7BC"/>
+            <rect x="106" y="234" width="31" height="18" rx="9" fill="#6FA3D6"/>
+          </g>
+          <!-- ワンピース -->
+          <path d="M88 102 h44 l26 88 q3 9 -7 9 h-82 q-10 0 -7 -9 z" fill="#FF9FB6" stroke="#E9758F" stroke-width="4" stroke-linejoin="round"/>
+          <rect x="90" y="96" width="40" height="14" rx="7" fill="#FFFFFF" stroke="#E9758F" stroke-width="3"/>
+          <!-- かお -->
+          <circle cx="110" cy="60" r="46" fill="#7A4B32"/>
+          <circle cx="70" cy="86" r="17" fill="#7A4B32"/>
+          <circle cx="150" cy="86" r="17" fill="#7A4B32"/>
+          <circle cx="150" cy="70" r="9" fill="#FFD86B"/>
+          <circle cx="110" cy="68" r="38" fill="#FFE0C8"/>
+          <path d="M74 54 q10 -24 36 -24 q26 0 36 24 q-18 -9 -36 -9 q-18 0 -36 9 z" fill="#7A4B32"/>
+          <circle cx="96" cy="74" r="5.5" fill="#4A3226"/>
+          <circle cx="124" cy="74" r="5.5" fill="#4A3226"/>
+          <circle cx="83" cy="86" r="7" fill="#FF9FB6" opacity=".55"/>
+          <circle cx="137" cy="86" r="7" fill="#FF9FB6" opacity=".55"/>
+          <path d="M101 88 q9 9 18 0" fill="none" stroke="#4A3226" stroke-width="4.5" stroke-linecap="round"/>
+          <!-- かごから のぞく せんたくもの -->
+          <path d="M64 162 q10 -20 26 -9 q13 8 25 -6 q13 -12 22 4 q6 6 12 4 l3 14 h-88 z" fill="#B7DFF2"/>
+          <path d="M92 154 q9 -12 20 -4 q9 7 18 -2 l4 16 h-44 z" fill="#FFD86B"/>
+          <!-- かご -->
+          <path d="M56 166 h108 l-11 44 q-1 7 -8 7 h-70 q-7 0 -8 -7 z" fill="#E0B87E" stroke="#C69A5E" stroke-width="4" stroke-linejoin="round"/>
+          <g stroke="#C69A5E" stroke-width="3" opacity=".75">
+            <path d="M78 172 L82 214"/><path d="M110 172 L110 216"/><path d="M142 172 L138 214"/>
+            <path d="M60 186 H160"/>
+          </g>
+          <rect x="50" y="158" width="120" height="15" rx="7.5" fill="#F0CD9A" stroke="#C69A5E" stroke-width="4"/>
+          <!-- うで -->
+          <path d="M90 112 q-26 10 -28 36 q-1 12 6 18" fill="none" stroke="#FFE0C8" stroke-width="16" stroke-linecap="round"/>
+          <path d="M130 112 q26 10 28 36 q1 12 -6 18" fill="none" stroke="#FFD7BC" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="64" cy="166" r="10" fill="#FFE0C8"/>
+          <circle cx="156" cy="166" r="10" fill="#FFD7BC"/>
+        </svg>
+      </div>
+    </div>
   </main>
 
   <!-- クリア -->
@@ -453,6 +527,7 @@ const Snd = (()=>{
     plop(){ tone(420,180,0.18,'triangle',0.2); noise(0.12,700,0.06); },
     whir(){ noise(0.32,760,0.09); tone(180,240,0.3,'sawtooth',0.05); },
     click(){ tone(980,620,0.1,'square',0.1); },
+    step(){ tone(240,150,0.09,'sine',0.09); noise(0.06,420,0.05); },
     finish(){ for(let i=0;i<3;i++){ tone(1046,1046,0.16,'square',0.14,i*0.26); } },
     sparkle(){ [880,1174,1568].forEach((f,i)=>tone(f,f,0.14,'triangle',0.12,i*0.07)); },
     fanfare(){ [523,659,784,1046].forEach((f,i)=>tone(f,f,0.5,'triangle',0.16,i*0.15)); }
@@ -465,14 +540,15 @@ const titleScreen=el('titleScreen'), clearScreen=el('clearScreen'), hud=el('hud'
 const sceneRoom=el('sceneRoom'), sceneYard=el('sceneYard'), clothLayer=el('clothLayer');
 const machine=el('machine'), switchBtn=el('switchBtn'), sun=el('sun'), sudsFill=el('sudsFill'), drumSpin=el('drumSpin');
 const say=el('say'), pips=el('pips'), bubbles=el('bubbles'), doorGlass=el('doorGlass'), targets=el('targets');
+const carryScene=el('carryScene'), carrier=el('carrier');
 
 let G = null;
 const STEPS = ['load','switch','wash','hang','dry','collect'];
 const LINES = {
-  load:'おふくを せんたくきに いれてね',
+  load:'ふくを せんたくきに いれてね',
   switch:'スイッチを おしてね',
   wash:'せんたくきを トントンたたいて まわそう',
-  hang:'おふくを ひっぱって ほしてね',
+  hang:'ふくを ひっぱって ほしてね',
   dry:'おひさまを トントンたたいて かわかそう',
   collect:'かわいたよ！ かごに とりこもう'
 };
@@ -484,7 +560,7 @@ const LINES = {
     const b = document.createElement('button');
     b.className = 'lv '+lv.cls;
     b.innerHTML = `<span class="name">${lv.name}</span><span class="dots">${'<i></i>'.repeat(lv.clothes)}</span>`;
-    b.setAttribute('aria-label', lv.name+' おふく'+lv.clothes+'まい');
+    b.setAttribute('aria-label', lv.name+' ふく'+lv.clothes+'まい');
     b.addEventListener('click',()=>{ Snd.unlock(); Snd.pop(); start(lv.key); });
     box.appendChild(b);
   });
@@ -512,6 +588,7 @@ function start(levelKey){
   titleScreen.hidden = true; clearScreen.hidden = true;
   hud.hidden = false; stage.hidden = false;
   sceneRoom.hidden = false; sceneYard.hidden = true;
+  carryScene.hidden = true; carrier.classList.remove('go');
   clothLayer.innerHTML = ''; bubbles.innerHTML = ''; targets.innerHTML = '';
   sudsFill.setAttribute('y','204'); sudsFill.setAttribute('height','0');
   drumSpin.style.transform = 'rotate(0deg)';
@@ -536,7 +613,7 @@ function makeCloth(i,type,color){
   b.style.setProperty('--r', ((i*37)%2 ? 1 : -1) * (6 + (i*13)%12) + 'deg');
   b.style.setProperty('--s','1');
   b.innerHTML = `<span class="peg"></span><span class="inner">${clothSVG(type,color)}${DROPS}</span>`;
-  b.setAttribute('aria-label','おふく');
+  b.setAttribute('aria-label','ふく');
   const obj = {i,type,color,el:b,place:'floor',bpos:[50,80]};
   b.addEventListener('click',()=>onCloth(obj));
   b.addEventListener('pointerdown',ev=>onGrab(obj,ev));
@@ -592,36 +669,53 @@ function layoutFloor(){
   G.clothes.forEach((c,i)=>{
     const row = Math.floor(i/perRow), col = i%perRow;
     const cnt = row===0 ? perRow : n-perRow;
-    const x = cnt<=1 ? 50 : 16 + 68*col/(cnt-1);
-    const y = row===0 ? 73 : 88;
+    const x = cnt<=1 ? 50 : 14 + 72*col/(cnt-1);
+    const y = row===0 ? 74 : 89;
     place(c, x, y, 1, 1, true);
   });
 }
 
 function basketPos(i){
   const n = G.clothes.length;
-  const spread = Math.min(26, 6*n);
-  const x = 50 + (i-(n-1)/2) * (spread/Math.max(1,n-1)) * 1.6;
-  const y = 80 - (i%3)*1.6;
+  const spread = Math.min(24, 5.5*n);
+  const x = 50 + (i-(n-1)/2) * (spread/Math.max(1,n-1)) * 1.25;
+  const y = 79 - (i%3)*1.4;
   return [x,y];
 }
 
-const ropeY = x => 34 + 5.4*(1 - Math.pow((x-50)/44, 2));
+/* 物干しは2段。row 0 = うえ、row 1 = した */
+const ROPE_BASE = [28, 50];
+const ropeY = (row,x) => ROPE_BASE[row] + 4.5*(1 - Math.pow((x-50)/44, 2));
+const HALF = 'clamp(39px, 11vmin, 85px)';   /* ふくの たかさの はんぶん */
 
-function hangPos(i){
+function rowsOf(n){ const top = Math.ceil(n/2); return [top, n-top]; }
+
+function slotInfo(i){
   const n = G.clothes.length;
-  const x = n<=1 ? 50 : 14 + 72*i/(n-1);
-  return [x, `calc(${ropeY(x).toFixed(2)}% + clamp(26px, 7vmin, 54px))`];
+  const [tn, bn] = rowsOf(n);
+  const row = i < tn ? 0 : 1;
+  const idx = row===0 ? i : i - tn;
+  const cnt = row===0 ? tn : bn;
+  const x = cnt<=1 ? 50 : 15 + 70*idx/(cnt-1);
+  return {row, x, y:ropeY(row,x)};
+}
+function hangPos(i){
+  const s = slotInfo(i);
+  return [s.x, `calc(${s.y.toFixed(2)}% + ${HALF})`];
 }
 
 function drawRope(){
-  const pts = [];
-  for(let k=0;k<=20;k++){
-    const x = 6 + 88*k/20;
-    pts.push([x, ropeY(x)]);
-  }
-  const d = 'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
-  el('ropePath').setAttribute('d', d + ' M6 34 L6 92 M94 34 L94 92');
+  let d = '';
+  ROPE_BASE.forEach((_,row)=>{
+    const pts = [];
+    for(let k=0;k<=20;k++){
+      const x = 6 + 88*k/20;
+      pts.push([x, ropeY(row,x)]);
+    }
+    d += 'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L')+' ';
+  });
+  d += `M6 ${ROPE_BASE[0]} L6 92 M94 ${ROPE_BASE[0]} L94 92`;
+  el('ropePath').setAttribute('d', d);
 }
 
 /* ===== エフェクト ===== */
@@ -652,10 +746,10 @@ function onCloth(c){
   if(G.step==='load' && c.place==='floor'){
     c.place = 'machine';
     Snd.plop();
-    place(c, 50, 41, 0.25, 0, false);
+    place(c, 50, 39, 0.25, 0, false);
     c.el.classList.remove('pickable');
     G.inMachine++;
-    popBubbles(50, 41, 3);
+    popBubbles(50, 39, 3);
     refreshPickable();
     if(G.inMachine === G.clothes.length){
       setTimeout(()=>{ Snd.click(); setStep('switch'); }, 500);
@@ -666,7 +760,7 @@ function onCloth(c){
     Snd.plop();
     c.el.classList.remove('hung');
     const [x,y] = basketPos(G.collected++);
-    place(c, x, y, 0.62, 1, false);
+    place(c, x, y, 0.5, 1, false);
     sparkleAt(x, y-8);
     refreshPickable();
     if(G.collected === G.clothes.length){
@@ -685,10 +779,12 @@ function openSlots(){
   for(let i=0;i<G.clothes.length;i++) if(!used.has(i)) out.push(i);
   return out;
 }
-function nearestSlot(x, open){
+function nearestSlot(x, y, open){
   let best = open[0], bd = Infinity;
   open.forEach(i=>{
-    const d = Math.abs(hangPos(i)[0] - x);
+    const s = slotInfo(i);
+    const dx = s.x - x, dy = (s.y + 6) - y;
+    const d = dx*dx + dy*dy*2.2;   /* たてのズレを すこし きびしくみる */
     if(d < bd){ bd = d; best = i; }
   });
   return best;
@@ -696,14 +792,14 @@ function nearestSlot(x, open){
 function drawTargets(){
   if(!G || G.step!=='hang'){ targets.innerHTML=''; return; }
   targets.innerHTML = openSlots().map(i=>{
-    const x = hangPos(i)[0];
-    return `<span class="tgt" data-slot="${i}" style="left:${x.toFixed(1)}%;top:${(ropeY(x)+2.5).toFixed(1)}%"></span>`;
+    const s = slotInfo(i);
+    return `<span class="tgt" data-slot="${i}" style="left:${s.x.toFixed(1)}%;top:${(s.y+2.5).toFixed(1)}%"></span>`;
   }).join('');
 }
-function hotTarget(x){
+function hotTarget(x, y){
   const open = openSlots();
   if(!open.length) return;
-  const hit = nearestSlot(x, open);
+  const hit = nearestSlot(x, y, open);
   [...targets.children].forEach(t=> t.classList.toggle('hot', +t.dataset.slot === hit));
 }
 
@@ -729,7 +825,7 @@ function onDragMove(ev){
   if(Math.abs(ev.clientX-drag.sx) > 8 || Math.abs(ev.clientY-drag.sy) > 8) drag.moved = true;
   drag.c.el.style.left = drag.x + '%';
   drag.c.el.style.top  = drag.y + '%';
-  if(drag.moved) hotTarget(drag.x);
+  if(drag.moved) hotTarget(drag.x, drag.y);
 }
 function onDragEnd(){
   if(!drag) return;
@@ -743,11 +839,11 @@ function onDragEnd(){
   if(!open.length) return;
   if(!moved){
     hangCloth(c, open[0]);
-  } else if(y < 66){
-    hangCloth(c, nearestSlot(x, open));
+  } else if(y < 72){
+    hangCloth(c, nearestSlot(x, y, open));
   } else {
     Snd.plop();
-    place(c, c.bpos[0], c.bpos[1], 0.62, 1, false);
+    place(c, c.bpos[0], c.bpos[1], 0.5, 1, false);
     drawTargets();
   }
 }
@@ -757,7 +853,8 @@ function hangCloth(c, slot){
   const [x,y] = hangPos(slot);
   c.el.classList.add('hung');
   place(c, x, y, 1, 1, false);
-  sparkleAt(hangPos(slot)[0], ropeY(hangPos(slot)[0]) + 2);
+  const s = slotInfo(slot);
+  sparkleAt(s.x, s.y + 2);
   drawTargets();
   refreshPickable();
   if(G.hung === G.clothes.length){
@@ -798,22 +895,34 @@ function finishWash(){
   say.textContent = 'ピーピー！ あらえたよ';
   setTimeout(()=>{ Snd.finish(); }, 300);
   doorGlass.style.opacity = '0';
+
+  // 女の子がかごを持って おそとへ
   setTimeout(()=>{
+    say.textContent = 'おそとに はこぼう';
+    carryScene.hidden = false;
+    carrier.classList.remove('go'); void carrier.offsetWidth; carrier.classList.add('go');
     sceneRoom.hidden = true; sceneYard.hidden = false;
+    for(let i=0;i<5;i++) setTimeout(()=>Snd.step(), 260 + i*480);
+  }, 1600);
+
+  // おそとに とうちゃく
+  setTimeout(()=>{
+    carrier.classList.remove('go');
+    carryScene.hidden = true;
     drawRope();
     G.clothes.forEach((c,i)=>{
       c.place = 'basket';
       const [x,y] = basketPos(i);
       c.bpos = [x,y];
-      place(c, x, y-14, 0.62, 0, true);
-      setTimeout(()=>{ place(c, x, y, 0.62, 1, false); setWet(c, 0); }, 40 + i*70);
+      place(c, x, y-14, 0.5, 0, true);
+      setTimeout(()=>{ place(c, x, y, 0.5, 1, false); setWet(c, 0); }, 40 + i*70);
     });
     setTimeout(()=>{
       G.busy = false;
       Snd.pop();
       setStep('hang');
     }, 400 + G.clothes.length*70);
-  }, 1600);
+  }, 4400);
 }
 
 function setWet(c, dryness){
@@ -838,7 +947,7 @@ sun.addEventListener('click', ()=>{
   if(G.sunTaps >= G.lv.sunTaps){
     G.busy = true;
     say.textContent = 'ふわふわに かわいたよ';
-    G.clothes.forEach(c=>{ const x = hangPos(c.slot)[0]; sparkleAt(x, ropeY(x)+4); });
+    G.clothes.forEach(c=>{ const s = slotInfo(c.slot); sparkleAt(s.x, s.y + 4); });
     setTimeout(()=>{ G.busy=false; Snd.click(); setStep('collect'); }, 1100);
   }
 });
@@ -864,6 +973,7 @@ el('homeBtn').addEventListener('click', goTitle);
 
 function goTitle(){
   clearScreen.hidden = true; hud.hidden = true; stage.hidden = true;
+  carryScene.hidden = true; carrier.classList.remove('go');
   titleScreen.hidden = false;
   clothLayer.innerHTML = ''; bubbles.innerHTML = ''; targets.innerHTML = '';
   G = null;
